@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  golang:
+    build:
+      context: .
+    image: rts-keycloak-gateway
+    env_file:
+      - config.env
+    ports:
+      - "8787:8080"
+    deploy:
+      restart_policy:
+        condition: on-failure
