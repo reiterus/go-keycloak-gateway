@@ -25,6 +25,7 @@ func main() {
 
 	e.POST("/token/get", tokenGet)
 	e.POST("/token/verify", tokenVerify)
+	e.POST("/token/only", tokenOnly)
 
 	httpPort := os.Getenv("HTTP_PORT")
 	if httpPort == "" {
@@ -34,8 +35,44 @@ func main() {
 	e.Logger.Fatal(e.Start(":" + httpPort))
 }
 
-// Get Keycloak token for my GitHub account
+// tokenGet Get Keycloak token for my GitHub account
 func tokenGet(c echo.Context) error {
+	return c.JSONPretty(http.StatusOK, getTokenResponse(), " ")
+}
+
+// tokenVerify Verify Keycloak token
+func tokenVerify(c echo.Context) error {
+	bearer := "Bearer " + token(c)
+	req, _ := http.NewRequest("POST", endpoint("userinfo"), nil)
+	req.Header.Add("Authorization", bearer)
+
+	return c.JSONPretty(http.StatusOK, send(req), " ")
+}
+
+// tokenOnly Get token only from response
+func tokenOnly(c echo.Context) error {
+	jsonData := getTokenResponse()
+	response := TokenResponse{}
+	result := response.parseTokenResponse(jsonData)
+
+	return c.String(http.StatusOK, result.AccessToken)
+}
+
+// token Get token from "Authorization" header
+func token(c echo.Context) string {
+	bearer := c.Request().Header.Get("Authorization")
+	slice := strings.Split(bearer, " ")
+
+	return slice[len(slice)-1]
+}
+
+// endpoint Get Keycloak endpoint
+func endpoint(action string) string {
+	return fmt.Sprintf("%s/protocol/openid-connect/%s", os.Getenv("DOMAIN_WITH_REALM"), action)
+}
+
+// getTokenResponse Get token from token-endpoint response
+func getTokenResponse() string {
 	data := url.Values{}
 
 	data.Set("client_id", os.Getenv("CLIENT_ID"))
@@ -46,32 +83,10 @@ func tokenGet(c echo.Context) error {
 	req, _ := http.NewRequest("POST", endpoint("token"), strings.NewReader(data.Encode()))
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	return c.String(http.StatusOK, send(req))
+	return send(req)
 }
 
-// Verify Keycloak token
-func tokenVerify(c echo.Context) error {
-	bearer := "Bearer " + token(c)
-	req, _ := http.NewRequest("POST", endpoint("userinfo"), nil)
-	req.Header.Add("Authorization", bearer)
-
-	return c.String(http.StatusOK, send(req))
-}
-
-// Get token from "Authorization" header
-func token(c echo.Context) string {
-	bearer := c.Request().Header.Get("Authorization")
-	slice := strings.Split(bearer, " ")
-
-	return slice[len(slice)-1]
-}
-
-// Get Keycloak endpoint
-func endpoint(action string) string {
-	return fmt.Sprintf("%s/protocol/openid-connect/%s", os.Getenv("DOMAIN_WITH_REALM"), action)
-}
-
-// Send request to Keycloak
+// send Send request to Keycloak
 func send(req *http.Request) string {
 	result := "..."
 	client := &http.Client{}
