@@ -25,6 +25,7 @@ func main() {
 
 	e.POST("/token/get", tokenGet)
 	e.POST("/token/verify", tokenVerify)
+	e.POST("/users/create", usersCreate)
 
 	httpPort := os.Getenv("HTTP_PORT")
 	if httpPort == "" {
@@ -56,6 +57,29 @@ func tokenVerify(c echo.Context) error {
 	req.Header.Add("Authorization", bearer)
 
 	return c.String(http.StatusOK, send(req))
+}
+
+// Create new user TODO
+func usersCreate(c echo.Context) error {
+	fullUrl := os.Getenv("DOMAIN_WITH_REALM")
+	ssoUrl := SsoUrl{}
+	sso := ssoUrl.parseUrl(fullUrl)
+	bearer := "Bearer " + token(c)
+
+	form := c.Request().Form
+	data := url.Values{}
+
+	data.Set("firstName", form.Get("firstName"))
+	data.Set("lastName", form.Get("lastName"))
+	data.Set("email", form.Get("email"))
+	data.Set("enabled", form.Get("enabled"))
+	data.Set("username", form.Get("username"))
+
+	req, _ := http.NewRequest("POST", sso.UrlAdmin, strings.NewReader(data.Encode()))
+	req.Header.Add("Authorization", bearer)
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	return c.String(http.StatusOK, "")
 }
 
 // Get token from "Authorization" header

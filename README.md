@@ -11,6 +11,8 @@ To configure this gateway use file `config.env`
 - POST: /token/verify : verify Keycloak token
 
 ## Examples
+`curl -X POST http://localhost:8080/users/create -H 'Authorization: Bearer eyJhbG...qzm61uA -d 'firstName=Qwe&lastName=Asd&email=asd.asd@yandex.ru&enabled=true&username=qweasd'`
+
 #### Verify token
 `curl -X POST http://localhost:8787/token/verify -H 'Authorization: Bearer eyJhbG...qzm61uA`
 ```json
