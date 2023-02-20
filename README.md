@@ -40,24 +40,35 @@ To configure this gateway use file `config.env`
 }
 ```
 
+#### Get token only
+`curl -X POST http://localhost:8787/token/only`
+```shell
+eyJhbG...EIiwg
+```
+
 #### Endpoints list
 `curl -X POST http://localhost:8787`
 ```json
 [
- {
-  "method": "POST",
-  "path": "/",
-  "name": "main.main.func1"
- },
- {
-  "method": "POST",
-  "path": "/token/get",
-  "name": "main.tokenGet"
- },
- {
-  "method": "POST",
-  "path": "/token/verify",
-  "name": "main.tokenVerify"
- }
+  {
+    "method": "POST",
+    "path": "/",
+    "name": "main.main.func1"
+  },
+  {
+    "method": "POST",
+    "path": "/token/get",
+    "name": "main.tokenGet"
+  },
+  {
+    "method": "POST",
+    "path": "/token/verify",
+    "name": "main.tokenVerify"
+  },
+  {
+    "method": "POST",
+    "path": "/token/only",
+    "name": "main.tokenOnly"
+  }
 ]
 ```
