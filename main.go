@@ -1,5 +1,6 @@
 package main
 
+import "C"
 import (
 	"encoding/json"
 	"fmt"
@@ -39,8 +40,18 @@ func main() {
 
 // tokenGet Get Keycloak token for my GitHub account
 func tokenGet(c echo.Context) error {
-	result := TokenResponse{}
-	_ = json.Unmarshal(getTokenResponse(), &result)
+	response := getTokenResponse()
+
+	var result interface{}
+
+	switch strings.Contains(string(response), "error") {
+	case true:
+		result = ErrorResponse{}
+	case false:
+		result = TokenResponse{}
+	}
+
+	_ = json.Unmarshal(response, &result)
 
 	return c.JSONPretty(http.StatusOK, result, " ")
 }
@@ -50,9 +61,18 @@ func tokenVerify(c echo.Context) error {
 	bearer := "Bearer " + token(c)
 	req, _ := http.NewRequest("POST", endpoint("userinfo"), nil)
 	req.Header.Add("Authorization", bearer)
+	response := send(req)
 
-	result := VerifyResponse{}
-	_ = json.Unmarshal(send(req), &result)
+	var result interface{}
+
+	switch strings.Contains(string(response), "error") {
+	case true:
+		result = ErrorResponse{}
+	case false:
+		result = VerifyResponse{}
+	}
+
+	_ = json.Unmarshal(response, &result)
 
 	return c.JSONPretty(http.StatusOK, result, " ")
 }
