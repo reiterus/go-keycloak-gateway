@@ -1,10 +1,6 @@
 package main
 
-import (
-	"encoding/json"
-)
-
-// TokenResponse structure
+// TokenResponse structure from "token" endpoint
 type TokenResponse struct {
 	AccessToken      string `json:"access_token"`
 	ExpiresIn        int    `json:"expires_in"`
@@ -16,11 +12,13 @@ type TokenResponse struct {
 	Scope            string `json:"scope"`
 }
 
-// parseTokenResponse convert keycloak response to structure
-func (su TokenResponse) parseTokenResponse(response string) TokenResponse {
-	jsonData := []byte(response)
-	result := TokenResponse{}
-	_ = json.Unmarshal(jsonData, &result)
-
-	return result
+// VerifyResponse structure from "userinfo" endpoint
+type VerifyResponse struct {
+	Sub               string `json:"sub"`
+	EmailVerified     bool   `json:"email_verified"`
+	Name              string `json:"name"`
+	PreferredUsername string `json:"preferred_username"`
+	GivenName         string `json:"given_name"`
+	FamilyName        string `json:"family_name"`
+	Email             string `json:"email"`
 }
