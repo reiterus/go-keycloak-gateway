@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -37,7 +39,10 @@ func main() {
 
 // tokenGet Get Keycloak token for my GitHub account
 func tokenGet(c echo.Context) error {
-	return c.JSONPretty(http.StatusOK, getTokenResponse(), " ")
+	result := TokenResponse{}
+	_ = json.Unmarshal(getTokenResponse(), &result)
+
+	return c.JSONPretty(http.StatusOK, result, " ")
 }
 
 // tokenVerify Verify Keycloak token
@@ -46,14 +51,16 @@ func tokenVerify(c echo.Context) error {
 	req, _ := http.NewRequest("POST", endpoint("userinfo"), nil)
 	req.Header.Add("Authorization", bearer)
 
-	return c.JSONPretty(http.StatusOK, send(req), " ")
+	result := VerifyResponse{}
+	_ = json.Unmarshal(send(req), &result)
+
+	return c.JSONPretty(http.StatusOK, result, " ")
 }
 
 // tokenOnly Get token only from response
 func tokenOnly(c echo.Context) error {
-	jsonData := getTokenResponse()
-	response := TokenResponse{}
-	result := response.parseTokenResponse(jsonData)
+	result := TokenResponse{}
+	_ = json.Unmarshal(getTokenResponse(), &result)
 
 	return c.String(http.StatusOK, result.AccessToken)
 }
@@ -72,7 +79,7 @@ func endpoint(action string) string {
 }
 
 // getTokenResponse Get token from token-endpoint response
-func getTokenResponse() string {
+func getTokenResponse() []byte {
 	data := url.Values{}
 
 	data.Set("client_id", os.Getenv("CLIENT_ID"))
@@ -86,30 +93,27 @@ func getTokenResponse() string {
 	return send(req)
 }
 
-// send Send request to Keycloak
-func send(req *http.Request) string {
-	result := "..."
+// send request to Keycloak
+func send(req *http.Request) []byte {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 
 	if err != nil {
-		result = "Error on response: " + err.Error()
+		log.Fatalf("Error on response: %v", err)
 	}
 
 	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			result = "Something wrong: " + err.Error()
+		e := Body.Close()
+		if e != nil {
+			log.Fatalf("Something wrong: %v", e)
 		}
 	}(resp.Body)
 
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		result = "Error while reading the response bytes: " + err.Error()
+		log.Fatalf("Error while reading the response bytes: %v", err)
 	}
 
-	result = string(body)
-
-	return result
+	return body
 }

@@ -12,7 +12,7 @@ To configure this gateway use file `config.env`
 
 ## Examples
 #### Verify token
-`curl -X POST http://localhost:8787/token/verify -H 'Authorization: Bearer eyJhbG...qzm61uA`
+`curl -X POST http://localhost:8787/token/verify -H 'Authorization: Bearer eyJhbG...qzm61uA'`
 ```json
 {
   "sub": "c636d74c-fa1c-4d79-b3de-35edbf3a3434",
