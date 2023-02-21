@@ -22,3 +22,9 @@ type VerifyResponse struct {
 	FamilyName        string `json:"family_name"`
 	Email             string `json:"email"`
 }
+
+// ErrorResponse structure for invalid token case
+type ErrorResponse struct {
+	Error            string `json:"error"`
+	ErrorDescription string `json:"error_description"`
+}
